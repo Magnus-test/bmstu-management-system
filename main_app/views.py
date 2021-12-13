@@ -39,7 +39,7 @@ def doLogin(request, **kwargs):
         try:
             captcha_server = requests.post(url=captcha_url, data=data)
             response = json.loads(captcha_server.text)
-            if response['success'] == False:
+            if not response['success']:
                 messages.error(request, 'Invalid Captcha. Try Again')
                 return redirect('/')
         except:
@@ -48,7 +48,7 @@ def doLogin(request, **kwargs):
         
         #Authenticate
         user = EmailBackend.authenticate(request, username=request.POST.get('email'), password=request.POST.get('password'))
-        if user != None:
+        if user:
             login(request, user)
             if user.user_type == '1':
                 return redirect(reverse("admin_home"))
@@ -63,7 +63,7 @@ def doLogin(request, **kwargs):
 
 
 def logout_user(request):
-    if request.user != None:
+    if request.user:
         logout(request)
     return redirect("/")
 
