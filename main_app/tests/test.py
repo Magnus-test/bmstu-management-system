@@ -1,5 +1,5 @@
 from django.test import TestCase
-from ..models import CustomUser, Admin, Staff, Student, Course, Subject, FeedbackStaff
+from ..models import CustomUser, Staff, Course, Subject, FeedbackStaff, LeaveReportStaff
 from ..views import *
 
 class CourseTestCase(TestCase):
@@ -48,10 +48,40 @@ class StaffFeedbackTestCase(TestCase):
                                                      user_type=2, first_name='first',
                                                      last_name='second', gender='M')
         custom_user.save()
-        staff = Staff.objects.get(custom_user.id)
-        f = FeedbackStaff.objects.create(feedback=self.text, staff=staff, reply=None)
+        staff = Staff.objects.get(admin_id=custom_user.id)
+        f = FeedbackStaff.objects.create(feedback=self.text, staff_id=staff.id, reply='Thanks!')
         f.save()
 
-    def test_(self):
-        f = FeedbackStaff.objects.get(text=self.text)
+    def test_feedback(self):
+        f = FeedbackStaff.objects.get(feedback=self.text)
         self.assertEqual(f.feedback, self.text)
+
+    def test_staff_id(self):
+        f = FeedbackStaff.objects.get(feedback=self.text)
+        custom_user = CustomUser.objects.get(email='testemail@mail.ru')
+        staff = Staff.objects.get(admin_id=custom_user.id)
+        self.assertEqual(f.staff_id, staff.id)
+
+class LeaveReportStaffTestCase(TestCase):
+    def setUp(self):
+        self.date = '2021-11-11'
+        self.message = 'I\'m leaving'
+
+        custom_user = CustomUser.objects.create_user(email='testemail@mail.ru',
+                                                     password='12345',
+                                                     user_type=2, first_name='first',
+                                                     last_name='second', gender='M')
+        custom_user.save()
+        staff = Staff.objects.get(admin_id=custom_user.id)
+        l = LeaveReportStaff.objects.create(date=self.date, message=self.message,
+                                            staff_id=staff.id)
+        l.save()
+
+    def test_message(self):
+        l = LeaveReportStaff.objects.get(date=self.date)
+        self.assertEqual(l.message, self.message)
+
+
+    def test_status_default(self):
+        l = LeaveReportStaff.objects.get(date=self.date)
+        self.assertEqual(l.status, 0)
